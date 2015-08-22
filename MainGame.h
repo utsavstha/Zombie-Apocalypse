@@ -5,6 +5,10 @@
 #include <Mirage/Camera2D.h>
 #include <Mirage/InputManager.h>
 #include <Mirage/SpriteBatch.h>
+#include <Mirage/SpriteFont.h>
+#include <Mirage/AudioEngine.h>
+#include <Mirage/ParticleEngine2D.h>
+#include <Mirage/ParticleBatch2D.h>
 
 #include "Level.h"
 #include <vector>
@@ -42,6 +46,8 @@ private:
 	
 	Mirage::SpriteBatch _agentSpriteBatch;		///< draws all agents
 
+	Mirage::SpriteBatch _hudSpriteBatch;		///< draw all huds
+
 	std::vector<Level*> _levels;		///< vector of all levels in the game
 	
 	Player* _player;
@@ -64,6 +70,13 @@ private:
 
 	int _currentLevel;
 
+	Mirage::SpriteFont* _spriteFont;
+
+	Mirage::AudioEngine m_audioEngine;
+
+	Mirage::ParticleEngine2D m_particleEngine;
+    Mirage::ParticleBatch2D* m_bloodParticleBatch;
+
 private:
     /// Initializes the core systems
     void initSystems();
@@ -78,10 +91,10 @@ private:
     void gameLoop();
 
 	///updates all agents
-	void updateAgents();
+	void updateAgents(float deltaTime);
 	
 	///update bullets
-	void updateBullets();
+	void updateBullets(float deltaTime);
 
 	///checks victory condition
 	void checkVictory();
@@ -91,7 +104,11 @@ private:
 
     /// Renders the game
     void drawGame();
-
+	
+	///Draws the HUD
+	void drawHud();
+	/// Adds blood to the particle engine
+    void addBlood(const glm::vec2& position, int numParticles);
    
 };
 

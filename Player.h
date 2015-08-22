@@ -16,7 +16,8 @@ public:
 
 	void update(const std::vector<std::string>& levelData,
 				std::vector<Human*>& humans,
-				std::vector<Zombie*>& zombies);///< move player based on keyboard input
+				std::vector<Zombie*>& zombies,
+				float deltaTime) override;///< move player based on keyboard input
 private:
 	Mirage::InputManager* _inputManager;
 	std::vector<Gun*> _guns;

@@ -16,9 +16,9 @@ Bullet::Bullet(glm::vec2 position, glm::vec2 direction,float damage, float speed
 Bullet::~Bullet(void)
 {
 }
-bool Bullet::update(const std::vector<std::string>& levelData)
+bool Bullet::update(const std::vector<std::string>& levelData, float deltTime)
 {
-	_position += _direction * _speed;
+	_position += _direction * _speed * deltTime;
 	return collideWithWorld(levelData);
 }
 

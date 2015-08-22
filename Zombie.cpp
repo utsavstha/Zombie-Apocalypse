@@ -1,5 +1,6 @@
 #include "Zombie.h"
 #include <glm/glm.hpp>
+#include <Mirage/ResourceManager.h>
 #include "Human.h"
 Zombie::Zombie(void)
 {
@@ -12,20 +13,22 @@ Zombie::~Zombie(void)
 void Zombie::init(float speed, glm::vec2 position)
 {
 	_speed = speed;
-	_health = 150.0f;
+	_health = 80.0f;
 	_position = position;
-	_color.setColor(80, 160, 140, 255);
+	_color.setColor(255, 255, 255, 255);
+	m_textureID =  Mirage::ResourceManager::getTexture("Textures/zombie.png").id;
 }
 
 void Zombie::update(const std::vector<std::string>& levelData,
 					std::vector<Human*>& humans,
-					std::vector<Zombie*>& zombies)
+					std::vector<Zombie*>& zombies,
+					float deltaTime)
 {
 	Human* closestHuman = getNearestHuman(humans);
 	if(closestHuman != nullptr)
 	{
-		glm::vec2 direction = glm::normalize(closestHuman->getPosition() - _position);
-		_position += direction * _speed;
+		m_direction = glm::normalize(closestHuman->getPosition() - _position);
+		_position += m_direction * _speed * deltaTime;
 	}
 
 	collideWithLevel(levelData);

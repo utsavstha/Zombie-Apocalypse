@@ -16,7 +16,8 @@ public:
 	void draw(Mirage::SpriteBatch& _spriteBatch);
 	virtual void update(const std::vector<std::string>& levelData,
 						std::vector<Human*>& humans,
-						std::vector<Zombie*>& zombies) = 0;
+						std::vector<Zombie*>& zombies,
+						float deltaTime) = 0;
 	glm::vec2 getPosition() const {return _position; }
 	bool collideWithLevel(const std::vector<std::string>& levelData);		//returns true if collided with level
 	bool collideWithAgent(Agent* agent);
@@ -30,8 +31,10 @@ protected:
 						   float y);
 	void collideWithTile(glm::vec2 tilePosition);
 	glm::vec2 _position;
+	glm::vec2 m_direction;
 	float _speed;
 	float _health;
 	Mirage::Color _color;
+	GLuint m_textureID;
 };
 

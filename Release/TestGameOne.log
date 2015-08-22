@@ -1,37 +1,11 @@
-﻿Build started 8/15/2015 2:20:24 PM.
+﻿Build started 8/22/2015 11:57:12 AM.
      1>Project "H:\Mirage2D\Mirage2D\TestGameOne\TestGameOne.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Bullet.cpp Gun.cpp MainGame.cpp Player.cpp main.cpp
-         Bullet.cpp
-     1>Bullet.cpp(47): warning C4018: '>=' : signed/unsigned mismatch
-     1>Bullet.cpp(49): warning C4018: '>=' : signed/unsigned mismatch
-         Gun.cpp
-     1>Gun.cpp(35): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
-         MainGame.cpp
-     1>MainGame.cpp(21): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(56): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned long', possible loss of data
-     1>MainGame.cpp(57): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>MainGame.cpp(58): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>MainGame.cpp(73): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(122): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(130): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(138): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(141): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(146): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(171): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(174): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(186): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(201): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(205): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(234): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(287): warning C4244: 'argument' : conversion from 'Sint32' to 'float', possible loss of data
-     1>MainGame.cpp(330): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(336): warning C4018: '<' : signed/unsigned mismatch
-     1>MainGame.cpp(341): warning C4018: '<' : signed/unsigned mismatch
-         Player.cpp
-         main.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Zombie.cpp
+         Zombie.cpp
+     1>Zombie.cpp(42): warning C4018: '<' : signed/unsigned mismatch
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"H:\Mirage2D\Mirage2D\Release\TestGameOne.exe" /NOLOGO SDL2.lib SDL2main.lib opengl32.lib glew32.lib Mirage.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"H:\Mirage2D\Mirage2D\Release\TestGameOne.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"H:\Mirage2D\Mirage2D\Release\TestGameOne.lib" /MACHINE:X86 /SAFESEH Release\Agent.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"H:\Mirage2D\Mirage2D\Release\TestGameOne.exe" /NOLOGO SDL2.lib SDL2main.lib SDL2_ttf.lib SDL2_mixer.lib opengl32.lib glew32.lib Mirage.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"H:\Mirage2D\Mirage2D\Release\TestGameOne.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"H:\Mirage2D\Mirage2D\Release\TestGameOne.lib" /MACHINE:X86 /SAFESEH Release\Agent.obj
          Release\Bullet.obj
          Release\Gun.obj
          Release\Human.obj
@@ -47,4 +21,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:17.83
+Time Elapsed 00:00:04.25

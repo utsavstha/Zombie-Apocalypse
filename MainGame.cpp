@@ -5,9 +5,15 @@
 #include <SDL/SDL.h>
 #include <iostream>
 #include <ctime>
+#include <algorithm>
 #include <random>
+#include <Mirage/vertex.h>
 #include <Mirage/Timing.h>
 #include <Mirage/errors.h>
+#include <Mirage/ResourceManager.h>
+#include <glm/gtx/rotate_vector.hpp>
+#include <random>
+#include <ctime>
 #include "Zombie.h"
 #include "Gun.h"
 #include "Bullet.h"
@@ -29,17 +35,44 @@ void MainGame::run()
 {
     initSystems();
 	initLevel();
+
+	Mirage::Music music = m_audioEngine.loadMusic("Sound/music.mp3");
+    music.play(-1);
+
 	gameLoop();
 }
 
 void MainGame::initSystems() 
 {
     Mirage::init();
+	// Initialize sound, must happen after Mirage::init
+    m_audioEngine.init();
 	_window.create("Zombie Apocalypse", _screenWidth, _screenHeight, 0);
 	_window.setBackgroundColor(0.6f, 0.6f, 1.0f,1.0f);
+
+	//initialize shaders
 	initShaders();
+
+	//initialize spritebatch
 	_agentSpriteBatch.init();
+	_hudSpriteBatch.init();
+
+	//initialize sprite font
+	_spriteFont = new Mirage::SpriteFont("Fonts/chintzy.ttf", 64);
 	_camera.init(_screenWidth, _screenHeight);
+
+	 // Initialize particles
+    m_bloodParticleBatch = new Mirage::ParticleBatch2D;
+    m_bloodParticleBatch->init(1000, 0.05f, 
+								Mirage::ResourceManager::getTexture("Textures/particle.png"),
+								//lamdas declaration
+							[](Mirage::Particle2D& particle, float deltaTime) {
+								particle.m_position += particle.m_velocity * deltaTime;
+								particle.m_color.a = (GLubyte)(particle.m_life * 255.0f);
+							}
+							);
+
+    m_particleEngine.addParticleBatch(m_bloodParticleBatch);
 
 	
 }
@@ -76,9 +109,9 @@ void MainGame::initLevel()
 		_zombies.back()->init(ZOMBIE_SPEED, zombiePosition[i]);
 	}
 	//setup the player guns
-	_player->addGun(new Gun("Magnum", 10, 1, 0.0f, 30, 20.0f));
-	_player->addGun(new Gun("ShotGun", 30, 12, 5.0f, 4, 20.0f));
-	_player->addGun(new Gun("MachineGun",2, 1, 0.0f, 20, 20.0f));
+	_player->addGun(new Gun("Magnum", 10, 1, 0.0f, 30, 20.0f, m_audioEngine.loadSoundEffect("Sound/shots/pistol.wav")));
+	_player->addGun(new Gun("ShotGun", 30, 12, 5.0f, 4, 20.0f, m_audioEngine.loadSoundEffect("Sound/shots/shotgun.wav")));
+	_player->addGun(new Gun("MachineGun",2, 1, 0.0f, 20, 20.0f, m_audioEngine.loadSoundEffect("Sound/shots/cg1.wav")));
 }
 
 void MainGame::initShaders() 
@@ -94,20 +127,45 @@ void MainGame::initShaders()
 void MainGame::gameLoop() 
 {
 	
+   const float DESIRED_FLOAT = 60.0f;
+   const int MAX_PHYSICS_STEPS = 6;
    Mirage::FpsLimiter fpsLimiter;
 
    fpsLimiter.setMaxFPS(60.0f);
-
-   const float CAMERA_SCALE = 1.0f/ 2.0f;
+   //zoomout by 3x
+   const float CAMERA_SCALE = 1.0f/ 3.0f;
    _camera.setScale(CAMERA_SCALE);
+
+   const float MILLISECONDS_PER_SECOND = 1000.0f;
+   const float DESIRED_FRAME_TIME = MILLISECONDS_PER_SECOND / DESIRED_FLOAT;
+   const float MAX_DELTA_TIME = 1;
+   float previousTicks = SDL_GetTicks();
+
+   //Main game
    while(_gameState == GAME_STATE::PLAY)
    {
 	   fpsLimiter.begin();
 
+	   float newTicks = SDL_GetTicks();
+	   float frameTime = SDL_GetTicks() - previousTicks;
+	   previousTicks = newTicks;
+	   float totalDeltaTime = frameTime / DESIRED_FRAME_TIME;
 	   checkVictory();
+	   _inputManager.update();
+
 	   processInput();
-	   updateAgents();
-	   updateBullets();
+	   int i = 0;
+	   while(totalDeltaTime > 0.0f && i < MAX_PHYSICS_STEPS)
+	   {
+		   float deltaTime = std::min( totalDeltaTime, MAX_DELTA_TIME);
+		   updateAgents(deltaTime);
+		   updateBullets(deltaTime);
+		   m_particleEngine.update(deltaTime);
+		   totalDeltaTime -= deltaTime;
+		   i++;
+	   }
+
+	   
 	   _camera.setPosition(_player->getPosition());
 	   _camera.update();
 	   drawGame();
@@ -116,14 +174,14 @@ void MainGame::gameLoop()
    }
 
 }
-void MainGame::updateAgents()
+void MainGame::updateAgents(float deltaTime)
 {
 	//update all humans
 	for(int i = 0; i < _humans.size(); i++)
 	{
 		_humans[i]->update(_levels[_currentLevel]->getLevelData(),
 							_humans,
-							_zombies);
+							_zombies, deltaTime);
 	}
 
 	//update all zombies
@@ -131,7 +189,7 @@ void MainGame::updateAgents()
 	{
 		_zombies[i]->update(_levels[_currentLevel]->getLevelData(),
 							_humans,
-							_zombies);
+							_zombies, deltaTime);
 	}
 
 	//update human collisions
@@ -148,7 +206,7 @@ void MainGame::updateAgents()
 			//turn human into zombie by creating a new zombie in the humans position
 			if(_zombies[i]->collideWithAgent(_humans[j]))
 			{
-				//add new zombie
+				//add new zombies
 				_zombies.push_back(new Zombie);
 				_zombies.back()->init(ZOMBIE_SPEED, _humans[j]->getPosition());
 
@@ -162,7 +220,9 @@ void MainGame::updateAgents()
 		//collide with player
 		if(_zombies[i]->collideWithAgent(_player))
 		{
-			Mirage::fatalError("YOU LOSE");
+			//Mirage::fatalError("YOU LOSE");
+			std::cout<<"\nYou DIED!!\n";
+				SDL_Quit();
 		}
 
 	}
@@ -180,13 +240,13 @@ void MainGame::updateAgents()
 
 }
 
-void MainGame::updateBullets()
+void MainGame::updateBullets(float deltaTime)
 {
 	//update and collide with world
 	for(int i = 0; i < _bullets.size(); )
 	{
 		//if update returns true the bullet collided with wall
-		if(_bullets[i].update(_levels[_currentLevel]->getLevelData()))
+		if(_bullets[i].update(_levels[_currentLevel]->getLevelData(), deltaTime))
 		{
 			_bullets[i] = _bullets.back();
 			_bullets.pop_back();
@@ -207,7 +267,7 @@ void MainGame::updateBullets()
 			//check collision
 			if(_bullets[i].collideWithAgent(_zombies[j]))
 			{
-				
+				addBlood(_bullets[i].getPosition(), 5);
 				//make damage to zombie
 				if(_zombies[j]->applyDamage(_bullets[i].getDamage()))
 				{
@@ -236,7 +296,7 @@ void MainGame::updateBullets()
 				//check collision
 				if(_bullets[i].collideWithAgent(_humans[j]))
 				{
-				
+					addBlood(_bullets[i].getPosition(), 5);
 					//make damage to human
 					if(_humans[j]->applyDamage(_bullets[i].getDamage()))
 					{
@@ -326,27 +386,63 @@ void MainGame::drawGame()
 
 	//begin drawing agents 
 	_agentSpriteBatch.begin();
+
+	//glm::vec2 agentPos;
+	const glm::vec2 agentDims(AGENT_RADIUS * 2.0f);
 	//draw humans
 	for(int i = 0; i < _humans.size(); i++)
 	{
-		_humans[i]->draw(_agentSpriteBatch);
+		if(_camera.isObjectInView(_humans[i]->getPosition(), agentDims))
+			_humans[i]->draw(_agentSpriteBatch);
 	}
 
 	//draw zombies
 	for(int i = 0; i < _zombies.size(); i++)
 	{
-		_zombies[i]->draw(_agentSpriteBatch);
+		if(_camera.isObjectInView(_humans[i]->getPosition(), agentDims))
+			_zombies[i]->draw(_agentSpriteBatch);
 	}
 	//draw the bullets
 	for(int i = 0; i < _bullets.size(); i++)
 	{
-		_bullets[i].draw(_agentSpriteBatch);
+		if(_camera.isObjectInView(_humans[i]->getPosition(), agentDims))
+			_bullets[i].draw(_agentSpriteBatch);
 	}
 	_agentSpriteBatch.end();
 	
 	_agentSpriteBatch.renderBatch();
-	
+
+	// Render the particles
+    m_particleEngine.draw(&_agentSpriteBatch);
+	//draw hud
+	//drawHud();
 	_textureProgram.unUse();
     // Swap our buffer and draw everything to the screen!
     _window.swapBuffer();
+}
+
+void MainGame::drawHud()
+{
+	_hudSpriteBatch.begin();
+
+	char buffer[256];
+	
+	sprintf_s(buffer, "Number of Humans %d", _humans.size());
+	_spriteFont->draw(_hudSpriteBatch, buffer, glm::vec2(300, 300), 
+						glm::vec2(4.0),  0.0f, Mirage::Color(255, 255, 255, 255));
+
+	_hudSpriteBatch.end();
+	_hudSpriteBatch.renderBatch();
+}
+void MainGame::addBlood(const glm::vec2& position, int numParticles) {
+
+    static std::mt19937 randEngine(time(nullptr));
+    static std::uniform_real_distribution<float> randAngle(0.0f, 360.0f);
+
+    glm::vec2 vel(2.0f, 0.0f);
+    Mirage::Color col(255, 0, 0, 255);
+
+    for (int i = 0; i < numParticles; i++) {
+        m_bloodParticleBatch->addParticle(position, glm::rotate(vel, randAngle(randEngine)), col, 20.0f);
+    }
 }

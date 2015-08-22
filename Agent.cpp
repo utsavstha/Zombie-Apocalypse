@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <algorithm>
-Agent::Agent(void)
+Agent::Agent(void) : m_direction(1.0f, 0.0f)
 {
 }
 
@@ -79,7 +79,7 @@ bool Agent::collideWithAgent(Agent* agent)
 
 void Agent::draw(Mirage::SpriteBatch& _spriteBatch)
 {
-	static int textureID =  Mirage::ResourceManager::getTexture("Textures/circle.png").id;
+	
 	const glm::vec4 uvRect(0.0f, 0.0f, 1.0f, 1.0f);
 	glm::vec4 desRect;
 	desRect.x = _position.x;
@@ -87,7 +87,7 @@ void Agent::draw(Mirage::SpriteBatch& _spriteBatch)
 	desRect.z = AGENT_WIDTH;
 	desRect.w = AGENT_WIDTH;
 
-	_spriteBatch.draw(desRect, uvRect, textureID, 0.0f, _color);
+	_spriteBatch.draw(desRect, uvRect, m_textureID, 0.0f, _color, m_direction);
 }
 
 bool Agent::applyDamage(float damage)
@@ -129,11 +129,16 @@ void Agent::collideWithTile(glm::vec2 tilePosition)
 {
 	
 	const float TILE_RADIUS = (float) TILE_WIDTH/2.0f;
+	//minimum distance before collision occurs
 	const float MIN_DISTANCE = AGENT_RADIUS + TILE_RADIUS;
 	
+	//center position of agent
 	glm::vec2 centrePlayerPos = _position + glm::vec2(AGENT_RADIUS);
+
+	//vector from agent to tile
 	glm::vec2 distVec = centrePlayerPos - tilePosition;
 	
+	//get the depth of collision
 	float xDepth = MIN_DISTANCE - abs(distVec.x);
 	float yDepth = MIN_DISTANCE - abs(distVec.y);
 

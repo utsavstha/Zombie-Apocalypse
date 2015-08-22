@@ -12,10 +12,11 @@ public:
 	Bullet(glm::vec2 position, glm::vec2 direction,float damage, float speed);
 	~Bullet(void);
 	//when update returns true delete bullet
-	bool update(const std::vector<std::string>& levelData);
+	bool update(const std::vector<std::string>& levelData, float deltTime);
 	void draw(Mirage::SpriteBatch& spriteBatch);
 	bool collideWithAgent(Agent* agent);
 	float getDamage() const { return _damage; }
+	glm::vec2 getPosition() const { return _position; }
 private:
 	bool collideWithWorld(const std::vector<std::string>& levelData);
 	float _damage;
